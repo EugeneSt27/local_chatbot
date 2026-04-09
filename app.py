@@ -91,7 +91,7 @@ with st.sidebar:
             st.session_state.messages = load_history(st.session_state.current_session)
         else:
             st.session_state.messages = [
-                {"role": "assistant", "content": f"Привет! Модель Qwen инициализируется из папки `{config.MODEL_PATH}`. Готов написать для вас код!"}
+                {"role": "assistant", "content": f"Привет! Модель инициализируется (источник: `{config.MODEL_PATH_OR_NAME}`). Готов написать для вас код!"}
             ]
             save_history(st.session_state.current_session, st.session_state.messages)
             files = get_history_files() # обновляем список файлов, чтобы новый отобразился в Sidebar
@@ -112,10 +112,10 @@ with st.sidebar:
 # ================================
 # ИНТЕРФЕЙС И ВЗАИМОДЕЙСТВИЕ
 # ================================
-# Инициализация клиента OpenAI для локального vLLM-сервера
+# Инициализация клиента OpenAI для локального сервера (vLLM или Ollama)
 client = OpenAI(
     api_key="EMPTY",
-    base_url=config.VLLM_API_URL,
+    base_url=config.API_URL,
 )
 
 # Вывод всей истории на главный экран
@@ -130,7 +130,7 @@ def get_model():
         models = client.models.list()
         return models.data[0].id
     except Exception:
-        return config.MODEL_PATH
+        return config.MODEL_PATH_OR_NAME
 
 # Пользовательский ввод
 if prompt := st.chat_input("Напишите ваш вопрос (например, 'Сделай ревью этой функции...') ..."):
@@ -170,4 +170,4 @@ if prompt := st.chat_input("Напишите ваш вопрос (наприме
             save_history(st.session_state.current_session, st.session_state.messages)
             
         except Exception as e:
-            st.error(f"⚠️ Ошибка сети или бэкенда vLLM:\n`{str(e)}`\n\nМодель не ответила. Убедитесь, что сервер запущен (консоль `start.bat`) и порт {config.VLLM_PORT} доступен.")
+            st.error(f"⚠️ Ошибка сети или бэкенда:\n`{str(e)}`\n\nМодель не ответила. Убедитесь, что сервер {config.ENGINE.upper()} запущен и порт {config.PORT} доступен.")
